@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نَغَم - مشغل الصوتيات</title>
+  <style>
+    :root {
+      --bg-main: #09090b;
+      --bg-card: #121216;
+      --bg-hover: #1c1c22;
+      --accent: #6366f1;
+      --accent-glow: rgba(99, 102, 241, 0.3);
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --border: #27272a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 650px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 15px;
+    }
+
+    h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 8px; }
+    
+    .toggle-video-btn {
+      background: var(--bg-hover);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: 0.2s;
+    }
+    .toggle-video-btn:hover { border-color: var(--accent); }
+
+    .media-box {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 160px;
+      border: 1px solid var(--border);
+    }
+
+    video {
+      width: 100%;
+      max-height: 300px;
+      display: none;
+    }
+    video.show { display: block; }
+
+    .visualizer {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 50px;
+    }
+    .bar {
+      width: 6px;
+      height: 15px;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: height 0.2s ease;
+    }
+    .playing .bar { animation: bounce 0.8s infinite alternate; }
+    .playing .bar:nth-child(2) { animation-delay: 0.2s; }
+    .playing .bar:nth-child(3) { animation-delay: 0.4s; }
+    .playing .bar:nth-child(4) { animation-delay: 0.1s; }
+    .playing .bar:nth-child(5) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      0% { height: 10px; }
+      100% { height: 45px; }
+    }
+
+    .track-info { text-align: center; }
+    .track-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 4px; word-break: break-word; }
+    .track-status { font-size: 0.85rem; color: var(--text-muted); }
+
+    .progress-area { display: flex; flex-direction: column; gap: 6px; }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+      height: 5px;
+    }
+    .time-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .btn {
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      font-size: 1.2rem;
+    }
+    .btn:hover { background: var(--bg-hover); }
+    
+    .play-btn {
+      background: var(--accent);
+      width: 54px;
+      height: 54px;
+      font-size: 1.4rem;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .play-btn:hover { background: #4f46e5; transform: scale(1.05); }
+
+    .mode-btn {
+      font-size: 0.85rem;
+      border-radius: 10px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      background: var(--bg-hover);
+      color: var(--text-muted);
+    }
+    .mode-btn.active {
+      border-color: var(--accent);
+      color: var(--text-main);
+    }
+
+    .playlist {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+      border-top: 1px solid var(--border);
+      padding-top: 15px;
+    }
+
+    .track-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      background: var(--bg-main);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+      gap: 10px;
+    }
+    .track-item:hover { background: var(--bg-hover); }
+    .track-item.active {
+      border-color: var(--accent);
+      background: rgba(99, 102, 241, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <h1>🎧 نَغَم</h1>
+    <button class="toggle-video-btn" id="toggleVideoBtn">إظهار الفيديو 🎬</button>
+  </header>
+
+  <div class="media-box" id="mediaBox">
+    <video id="player" playsinline></video>
+    <div class="visualizer" id="visualizer">
+      <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+    </div>
+  </div>
+
+  <div class="track-info">
+    <div class="track-title" id="trackTitle">جاري جلب القائمة...</div>
+    <div class="track-status" id="modeLabel">الوضع: تشغيل بالترتيب</div>
+  </div>
+
+  <div class="progress-area">
+    <input type="range" id="progressBar" value="0" min="0" step="0.1" />
+    <div class="time-labels">
+      <span id="currentTime">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn mode-btn active" id="modeBtn" title="تغيير وضع التكرار">➡️ بالترتيب</button>
+    <button class="btn" id="prevBtn" title="السابق">⏮️</button>
+    <button class="btn play-btn" id="playPauseBtn" title="تشغيل / إيقاف">▶️</button>
+    <button class="btn" id="nextBtn" title="التالي">⏭️</button>
+  </div>
+
+  <div class="playlist" id="playlist"></div>
+</div>
+
+<script>
+  const player = document.getElementById('player');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const modeBtn = document.getElementById('modeBtn');
+  const modeLabel = document.getElementById('modeLabel');
+  const progressBar = document.getElementById('progressBar');
+  const currentTimeEl = document.getElementById('currentTime');
+  const durationEl = document.getElementById('duration');
+  const trackTitle = document.getElementById('trackTitle');
+  const playlistEl = document.getElementById('playlist');
+  const visualizer = document.getElementById('visualizer');
+  const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+
+  let tracks = [];
+  let currentIndex = 0;
+  let playMode = 0; 
+  let showVideo = false;
+
+  const modes = [
+    { btn: "➡️ بالترتيب", label: "الوضع: تشغيل بالترتيب (يتوقف في النهاية)" },
+    { btn: "🔁 تكرار القائمة", label: "الوضع: تكرار القائمة بالكامل" },
+    { btn: "🔂 تكرار المقطع", label: "الوضع: تكرار الأغنية الحالية" }
+  ];
+
+  // جلب أسماء الفيديوهات والأغاني مباشرة من الصفحة الرئيسية للمشروع بدون فولدر media
+  async function loadTracksFromRoot() {
+    try {
+      const host = window.location.hostname; // username.github.io
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      
+      if (!host.includes('github.io') || pathParts.length === 0) {
+        trackTitle.textContent = "افتح الرابط من GitHub Pages ليتم تشغيل الملفات تلقائياً";
+        return;
+      }
+
+      const username = host.split('.')[0];
+      const repo = pathParts[0];
+      // قراءة محتويات المشروع الرئيسية مباشرة (Root)
+      const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents`;
+
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error("تعذر الوصول للمشروع، تأكد أنه Public");
+
+      const files = await response.json();
+      const allowedExt = ['.mp4', '.mp3', '.mkv', '.webm', '.m4a', '.wav', '.ogg'];
+
+      tracks = files
+        .filter(item => item.type === 'file' && allowedExt.some(ext => item.name.toLowerCase().endsWith(ext)))
+        .map(item => {
+          const cleanName = item.name.replace(/\.[^/.]+$/, "");
+          return {
+            title: cleanName,
+            file: item.download_url
+          };
+        });
+
+      if (tracks.length === 0) {
+        trackTitle.textContent = "ارفع فيديوهاتك بجانب index.html وستظهر هنا فوراً";
+        return;
+      }
+
+      loadTrack(0, false);
+    } catch (err) {
+      trackTitle.textContent = "تأكد أن المشروع عام (Public) وتم رفع الفيديوهات";
+      console.error(err);
+    }
+  }
+
+  function renderPlaylist() {
+    playlistEl.innerHTML = '';
+    tracks.forEach((track, index) => {
+      const div = document.createElement('div');
+      div.className = `track-item ${index === currentIndex ? 'active' : ''}`;
+      div.innerHTML = `<span>${index + 1}. ${track.title}</span><span>${index === currentIndex ? '🔊' : '▶️'}</span>`;
+      div.onclick = () => loadTrack(index, true);
+      playlistEl.appendChild(div);
+    });
+  }
+
+  function loadTrack(index, autoPlay = false) {
+    if (!tracks.length) return;
+    currentIndex = index;
+    player.src = tracks[currentIndex].file;
+    trackTitle.textContent = tracks[currentIndex].title;
+    renderPlaylist();
+    if (autoPlay) {
+      player.play();
+    }
+  }
+
+  function togglePlay() {
+    if (!tracks.length) return;
+    if (player.paused) {
+      player.play();
+    } else {
+      player.pause();
+    }
+  }
+
+  player.onplay = () => {
+    playPauseBtn.textContent = '⏸️';
+    visualizer.classList.add('playing');
+  };
+
+  player.onpause = () => {
+    playPauseBtn.textContent = '▶️';
+    visualizer.classList.remove('playing');
+  };
+
+  player.ontimeupdate = () => {
+    if (player.duration) {
+      progressBar.max = player.duration;
+      progressBar.value = player.currentTime;
+      currentTimeEl.textContent = formatTime(player.currentTime);
+      durationEl.textContent = formatTime(player.duration);
+    }
+  };
+
+  progressBar.oninput = () => {
+    player.currentTime = progressBar.value;
+  };
+
+  player.onended = () => {
+    if (playMode === 2) {
+      player.currentTime = 0;
+      player.play();
+    } else if (currentIndex < tracks.length - 1) {
+      loadTrack(currentIndex + 1, true);
+    } else if (playMode === 1) {
+      loadTrack(0, true);
+    } else {
+      playPauseBtn.textContent = '▶️';
+      visualizer.classList.remove('playing');
+    }
+  };
+
+  nextBtn.onclick = () => {
+    if (!tracks.length) return;
+    let next = (currentIndex + 1) % tracks.length;
+    loadTrack(next, true);
+  };
+
+  prevBtn.onclick = () => {
+    if (!tracks.length) return;
+    let prev = (currentIndex - 1 + tracks.length) % tracks.length;
+    loadTrack(prev, true);
+  };
+
+  modeBtn.onclick = () => {
+    playMode = (playMode + 1) % 3;
+    modeBtn.textContent = modes[playMode].btn;
+    modeLabel.textContent = modes[playMode].label;
+  };
+
+  toggleVideoBtn.onclick = () => {
+    showVideo = !showVideo;
+    if (showVideo) {
+      player.classList.add('show');
+      visualizer.style.display = 'none';
+      toggleVideoBtn.textContent = 'وضع الصوت فقط 🎧';
+    } else {
+      player.classList.remove('show');
+      visualizer.style.display = 'flex';
+      toggleVideoBtn.textContent = 'إظهار الفيديو 🎬';
+    }
+  };
+
+  function formatTime(sec) {
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  }
+
+  playPauseBtn.onclick = togglePlay;
+  loadTracksFromRoot();
+</script>
+
+</body>
+</html>

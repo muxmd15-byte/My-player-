@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NAGHAM 🎧 - Modern Cloud Player</title>
+  <title>NAGHAM 🎧 - Modern Cloud & YouTube Player</title>
   <style>
     :root {
       --bg-main: #0b0b0f;
@@ -38,7 +38,7 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 16px;
       box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(99, 102, 241, 0.1);
     }
 
@@ -47,23 +47,59 @@
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid var(--border);
-      padding-bottom: 15px;
+      padding-bottom: 12px;
     }
 
     h1 { font-size: 1.3rem; display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: -0.5px; }
     
-    .toggle-video-btn {
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
       background: var(--bg-hover);
       color: var(--text-main);
       border: 1px solid var(--border);
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 12px;
       cursor: pointer;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 500;
       transition: all 0.2s ease;
     }
-    .toggle-video-btn:hover { border-color: var(--accent); background: #272733; }
+    .action-btn:hover { border-color: var(--accent); background: #272733; }
+
+    .yt-input-box {
+      display: flex;
+      gap: 8px;
+      background: var(--bg-main);
+      padding: 8px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+    .yt-input-box input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text-main);
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .yt-input-box input::placeholder { color: var(--text-muted); }
+    .yt-input-box button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.8rem;
+      transition: 0.2s;
+    }
+    .yt-input-box button:hover { background: var(--accent-hover); }
 
     .media-box {
       position: relative;
@@ -85,6 +121,19 @@
       object-fit: contain;
     }
     video.show { display: block; }
+
+    .youtube-frame-container {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      display: none;
+      background: #000;
+    }
+    .youtube-frame-container.show { display: block; }
+    .youtube-frame-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
 
     .visualizer {
       display: flex;
@@ -114,7 +163,7 @@
     .track-title { 
       font-size: 1.1rem; 
       font-weight: 600; 
-      margin-bottom: 6px; 
+      margin-bottom: 4px; 
       word-break: break-word; 
       white-space: nowrap; 
       overflow: hidden; 
@@ -122,7 +171,7 @@
     }
     .track-status { font-size: 0.8rem; color: var(--text-muted); }
 
-    .progress-area { display: flex; flex-direction: column; gap: 8px; }
+    .progress-area { display: flex; flex-direction: column; gap: 6px; }
     
     input[type="range"] {
       width: 100%;
@@ -165,8 +214,8 @@
     
     .play-btn {
       background: var(--accent);
-      width: 56px;
-      height: 56px;
+      width: 54px;
+      height: 54px;
       font-size: 1.3rem;
       box-shadow: 0 0 25px var(--accent-glow);
     }
@@ -191,10 +240,10 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 220px;
+      max-height: 200px;
       overflow-y: auto;
       border-top: 1px solid var(--border);
-      padding-top: 15px;
+      padding-top: 12px;
       padding-right: 4px;
     }
 
@@ -205,7 +254,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 14px;
+      padding: 10px 14px;
       background: var(--bg-main);
       border: 1px solid transparent;
       border-radius: 14px;
@@ -226,11 +275,22 @@
 <div class="app-container">
   <header>
     <h1>🎧 NAGHAM</h1>
-    <button class="toggle-video-btn" id="toggleVideoBtn">🎬 Toggle Video</button>
+    <div class="header-actions">
+      <button class="action-btn" id="toggleVideoBtn">🎬 Video</button>
+    </div>
   </header>
+
+  <!-- YouTube Input Form -->
+  <div class="yt-input-box">
+    <input type="text" id="ytUrlInput" placeholder="🔗 Paste YouTube URL here..." />
+    <button id="addYtBtn">Add ➕</button>
+  </div>
 
   <div class="media-box" id="mediaBox">
     <video id="player" playsinline></video>
+    <div class="youtube-frame-container" id="ytFrameContainer">
+      <div id="ytPlayer"></div>
+    </div>
     <div class="visualizer" id="visualizer">
       <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
     </div>
@@ -241,7 +301,7 @@
     <div class="track-status" id="modeLabel">Mode: Sequential Play</div>
   </div>
 
-  <div class="progress-area">
+  <div class="progress-area" id="progressArea">
     <input type="range" id="progressBar" value="0" min="0" step="0.1" />
     <div class="time-labels">
       <span id="currentTime">0:00</span>
@@ -259,6 +319,8 @@
   <div class="playlist" id="playlist"></div>
 </div>
 
+<!-- YouTube IFrame API -->
+<script src="https://www.youtube.com/iframe_api"></script>
 <script>
   const player = document.getElementById('player');
   const playPauseBtn = document.getElementById('playPauseBtn');
@@ -273,11 +335,19 @@
   const playlistEl = document.getElementById('playlist');
   const visualizer = document.getElementById('visualizer');
   const toggleVideoBtn = document.getElementById('toggleVideoBtn');
+  const ytUrlInput = document.getElementById('ytUrlInput');
+  const addYtBtn = document.getElementById('addYtBtn');
+  const ytFrameContainer = document.getElementById('ytFrameContainer');
+  const progressArea = document.getElementById('progressArea');
 
   let tracks = [];
   let currentIndex = 0;
   let playMode = 0; 
   let showVideo = false;
+  let ytPlayer = null;
+  let isYoutubeCurrent = false;
+  let ytApiReady = false;
+  let pendingYtIndex = null;
 
   const modes = [
     { btn: "➡️ Sequential", label: "Mode: Sequential Play (Stops at end)" },
@@ -285,13 +355,21 @@
     { btn: "🔂 Repeat Track", label: "Mode: Loop Current Track" }
   ];
 
+  window.onYouTubeIframeAPIReady = function() {
+    ytApiReady = true;
+    if (pendingYtIndex !== null) {
+      loadTrack(pendingYtIndex, true);
+      pendingYtIndex = null;
+    }
+  };
+
   async function loadTracksFromRoot() {
     try {
       const host = window.location.hostname;
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       
       if (!host.includes('github.io') || pathParts.length === 0) {
-        trackTitle.textContent = "🚀 Open via GitHub Pages to load tracks automatically";
+        trackTitle.textContent = "🚀 Open via GitHub Pages to load tracks";
         return;
       }
 
@@ -305,26 +383,72 @@
       const files = await response.json();
       const allowedExt = ['.mp4', '.mp3', '.mkv', '.webm', '.m4a', '.wav', '.ogg'];
 
-      tracks = files
+      let repoTracks = files
         .filter(item => item.type === 'file' && allowedExt.some(ext => item.name.toLowerCase().endsWith(ext)))
         .map(item => {
           const cleanName = item.name.replace(/\.[^/.]+$/, "");
           return {
             title: cleanName,
-            file: item.download_url
+            file: item.download_url,
+            type: 'local'
           };
         });
 
+      let savedYts = [];
+      try {
+        const local = localStorage.getItem('nagham_yt_tracks');
+        if (local) savedYts = JSON.parse(local);
+      } catch(e) {}
+
+      tracks = [...repoTracks, ...savedYts];
+
       if (tracks.length === 0) {
-        trackTitle.textContent = "📂 Drop media files next to index.html!";
+        trackTitle.textContent = "📂 Drop media files or paste YouTube link above!";
         return;
       }
 
       loadTrack(0, false);
     } catch (err) {
-      trackTitle.textContent = "⚠️ Error loading media from repository";
+      trackTitle.textContent = "⚠️ Error loading repository files";
       console.error(err);
     }
+  }
+
+  function extractYouTubeId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  addYtBtn.onclick = () => {
+    const url = ytUrlInput.value.trim();
+    const videoId = extractYouTubeId(url);
+    if (!videoId) {
+      alert("❌ Invalid YouTube URL! Please check the link.");
+      return;
+    }
+
+    const newTrack = {
+      title: "YouTube Video (" + videoId + ")",
+      file: videoId,
+      type: 'youtube'
+    };
+
+    tracks.push(newTrack);
+    saveYtTracks();
+    ytUrlInput.value = '';
+    renderPlaylist();
+    
+    if (tracks.length === 1) {
+      loadTrack(0, true);
+    }
+  };
+
+  function saveYtTracks() {
+    const yts = tracks.filter(t => t.type === 'youtube');
+    try {
+      localStorage.setItem('nagham_yt_tracks', JSON.stringify(yts));
+    } catch(e) {}
   }
 
   function renderPlaylist() {
@@ -332,7 +456,8 @@
     tracks.forEach((track, index) => {
       const div = document.createElement('div');
       div.className = `track-item ${index === currentIndex ? 'active' : ''}`;
-      div.innerHTML = `<span class="track-name">🎵 ${index + 1}. ${track.title}</span><span>${index === currentIndex ? '🔊' : '▶️'}</span>`;
+      const icon = track.type === 'youtube' ? '📺' : '🎵';
+      div.innerHTML = `<span class="track-name">${icon} ${index + 1}. ${track.title}</span><span>${index === currentIndex ? '🔊' : '▶️'}</span>`;
       div.onclick = () => loadTrack(index, true);
       playlistEl.appendChild(div);
     });
@@ -341,20 +466,85 @@
   function loadTrack(index, autoPlay = false) {
     if (!tracks.length) return;
     currentIndex = index;
-    player.src = tracks[currentIndex].file;
-    trackTitle.textContent = tracks[currentIndex].title;
+    const track = tracks[currentIndex];
+    trackTitle.textContent = track.title;
     renderPlaylist();
-    if (autoPlay) {
-      player.play();
+
+    player.pause();
+    player.style.display = 'none';
+    if (ytPlayer && ytPlayer.stopVideo) {
+      try { ytPlayer.stopVideo(); } catch(e){}
+    }
+    ytFrameContainer.classList.remove('show');
+
+    if (track.type === 'youtube') {
+      isYoutubeCurrent = true;
+      visualizer.style.display = 'none';
+      progressArea.style.display = 'none';
+
+      if (!ytApiReady) {
+        pendingYtIndex = index;
+        trackTitle.textContent = "⏳ Loading YouTube API...";
+        return;
+      }
+
+      ytFrameContainer.classList.add('show');
+      if (!ytPlayer) {
+        ytPlayer = new YT.Player('ytPlayer', {
+          height: '100%',
+          width: '100%',
+          videoId: track.file,
+          playerVars: { 'autoplay': autoPlay ? 1 : 0, 'controls': 1 },
+          events: {
+            'onStateChange': onPlayerStateChange
+          }
+        });
+      } else {
+        ytPlayer.loadVideoById(track.file);
+        if (!autoPlay) ytPlayer.stopVideo();
+      }
+      playPauseBtn.textContent = autoPlay ? '⏸️' : '▶️';
+    } else {
+      isYoutubeCurrent = false;
+      visualizer.style.display = showVideo ? 'none' : 'flex';
+      progressArea.style.display = 'flex';
+      player.style.display = showVideo ? 'block' : 'none';
+      player.src = track.file;
+      if (autoPlay) {
+        player.play();
+      }
+    }
+  }
+
+  function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.PLAYING) {
+      playPauseBtn.textContent = '⏸️';
+    } else if (event.data == YT.PlayerState.PAUSED) {
+      playPauseBtn.textContent = '▶️';
+    } else if (event.data == YT.PlayerState.ENDED) {
+      handleTrackEnd();
     }
   }
 
   function togglePlay() {
     if (!tracks.length) return;
-    if (player.paused) {
-      player.play();
+    if (isYoutubeCurrent) {
+      if (ytPlayer) {
+        const state = ytPlayer.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+          ytPlayer.pauseVideo();
+          playPauseBtn.textContent = '▶️';
+        } else {
+          ytPlayer.playVideo();
+          playPauseBtn.textContent = '⏸️';
+        }
+      }
     } else {
-      player.pause();
+      if (player.paused) {
+        player.play();
+      } else {
+        player.pause();
+      }
     }
   }
 
@@ -369,7 +559,7 @@
   };
 
   player.ontimeupdate = () => {
-    if (player.duration) {
+    if (!isYoutubeCurrent && player.duration) {
       progressBar.max = player.duration;
       progressBar.value = player.currentTime;
       currentTimeEl.textContent = formatTime(player.currentTime);
@@ -378,13 +568,20 @@
   };
 
   progressBar.oninput = () => {
-    player.currentTime = progressBar.value;
+    if (!isYoutubeCurrent) {
+      player.currentTime = progressBar.value;
+    }
   };
 
-  player.onended = () => {
+  function handleTrackEnd() {
     if (playMode === 2) {
-      player.currentTime = 0;
-      player.play();
+      if (isYoutubeCurrent) {
+        ytPlayer.seekTo(0);
+        ytPlayer.playVideo();
+      } else {
+        player.currentTime = 0;
+        player.play();
+      }
     } else if (currentIndex < tracks.length - 1) {
       loadTrack(currentIndex + 1, true);
     } else if (playMode === 1) {
@@ -393,7 +590,9 @@
       playPauseBtn.textContent = '▶️';
       visualizer.classList.remove('playing');
     }
-  };
+  }
+
+  player.onended = handleTrackEnd;
 
   nextBtn.onclick = () => {
     if (!tracks.length) return;
@@ -415,6 +614,7 @@
 
   toggleVideoBtn.onclick = () => {
     showVideo = !showVideo;
+    if (isYoutubeCurrent) return;
     if (showVideo) {
       player.classList.add('show');
       visualizer.style.display = 'none';
@@ -422,7 +622,7 @@
     } else {
       player.classList.remove('show');
       visualizer.style.display = 'flex';
-      toggleVideoBtn.textContent = '🎬 Toggle Video';
+      toggleVideoBtn.textContent = '🎬 Video';
     }
   };
 

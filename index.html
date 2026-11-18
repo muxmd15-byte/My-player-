@@ -1,42 +1,45 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title> my player  </title>
+  <title>NAGHAM 🎧 - Modern Cloud Player</title>
   <style>
     :root {
-      --bg-main: #09090b;
-      --bg-card: #121216;
-      --bg-hover: #1c1c22;
+      --bg-main: #0b0b0f;
+      --bg-card: #13131a;
+      --bg-hover: #1e1e28;
       --accent: #6366f1;
-      --accent-glow: rgba(99, 102, 241, 0.3);
+      --accent-hover: #4f46e5;
+      --accent-glow: rgba(99, 102, 241, 0.35);
       --text-main: #f4f4f5;
-      --text-muted: #a1a1aa;
+      --text-muted: #94a3b8;
       --border: #27272a;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    
     body {
       background-color: var(--bg-main);
       color: var(--text-main);
       display: flex;
       justify-content: center;
+      align-items: center;
       min-height: 100vh;
       padding: 20px;
     }
 
     .app-container {
       width: 100%;
-      max-width: 650px;
+      max-width: 500px;
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: 20px;
+      border-radius: 24px;
       padding: 24px;
       display: flex;
       flex-direction: column;
       gap: 20px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(99, 102, 241, 0.1);
     }
 
     header {
@@ -47,37 +50,39 @@
       padding-bottom: 15px;
     }
 
-    h1 { font-size: 1.4rem; display: flex; align-items: center; gap: 8px; }
+    h1 { font-size: 1.3rem; display: flex; align-items: center; gap: 8px; font-weight: 700; letter-spacing: -0.5px; }
     
     .toggle-video-btn {
       background: var(--bg-hover);
       color: var(--text-main);
       border: 1px solid var(--border);
       padding: 8px 14px;
-      border-radius: 10px;
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 0.85rem;
-      transition: 0.2s;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
     }
-    .toggle-video-btn:hover { border-color: var(--accent); }
+    .toggle-video-btn:hover { border-color: var(--accent); background: #272733; }
 
     .media-box {
       position: relative;
       width: 100%;
       background: #000;
-      border-radius: 14px;
+      border-radius: 18px;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 160px;
+      min-height: 180px;
       border: 1px solid var(--border);
     }
 
     video {
       width: 100%;
-      max-height: 300px;
+      max-height: 280px;
       display: none;
+      object-fit: contain;
     }
     video.show { display: block; }
 
@@ -102,32 +107,45 @@
 
     @keyframes bounce {
       0% { height: 10px; }
-      100% { height: 45px; }
+      100% { height: 48px; }
     }
 
-    .track-info { text-align: center; }
-    .track-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 4px; word-break: break-word; }
-    .track-status { font-size: 0.85rem; color: var(--text-muted); }
+    .track-info { text-align: center; padding: 0 10px; }
+    .track-title { 
+      font-size: 1.1rem; 
+      font-weight: 600; 
+      margin-bottom: 6px; 
+      word-break: break-word; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+    }
+    .track-status { font-size: 0.8rem; color: var(--text-muted); }
 
-    .progress-area { display: flex; flex-direction: column; gap: 6px; }
+    .progress-area { display: flex; flex-direction: column; gap: 8px; }
+    
     input[type="range"] {
       width: 100%;
       accent-color: var(--accent);
       cursor: pointer;
-      height: 5px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 4px;
     }
+
     .time-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
     }
 
     .controls {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 18px;
+      gap: 16px;
     }
 
     .btn {
@@ -141,41 +159,47 @@
       align-items: center;
       justify-content: center;
       transition: 0.2s;
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
     .btn:hover { background: var(--bg-hover); }
     
     .play-btn {
       background: var(--accent);
-      width: 54px;
-      height: 54px;
-      font-size: 1.4rem;
-      box-shadow: 0 0 20px var(--accent-glow);
+      width: 56px;
+      height: 56px;
+      font-size: 1.3rem;
+      box-shadow: 0 0 25px var(--accent-glow);
     }
-    .play-btn:hover { background: #4f46e5; transform: scale(1.05); }
+    .play-btn:hover { background: var(--accent-hover); transform: scale(1.05); }
 
     .mode-btn {
-      font-size: 0.85rem;
-      border-radius: 10px;
+      font-size: 0.78rem;
+      border-radius: 12px;
       padding: 8px 12px;
       border: 1px solid var(--border);
       background: var(--bg-hover);
       color: var(--text-muted);
+      font-weight: 500;
     }
     .mode-btn.active {
       border-color: var(--accent);
       color: var(--text-main);
+      background: rgba(99, 102, 241, 0.1);
     }
 
     .playlist {
       display: flex;
       flex-direction: column;
       gap: 8px;
-      max-height: 260px;
+      max-height: 220px;
       overflow-y: auto;
       border-top: 1px solid var(--border);
       padding-top: 15px;
+      padding-right: 4px;
     }
+
+    .playlist::-webkit-scrollbar { width: 5px; }
+    .playlist::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
     .track-item {
       display: flex;
@@ -184,24 +208,25 @@
       padding: 12px 14px;
       background: var(--bg-main);
       border: 1px solid transparent;
-      border-radius: 12px;
+      border-radius: 14px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: all 0.2s;
       gap: 10px;
     }
-    .track-item:hover { background: var(--bg-hover); }
+    .track-item:hover { background: var(--bg-hover); border-color: var(--border); }
     .track-item.active {
       border-color: var(--accent);
-      background: rgba(99, 102, 241, 0.1);
+      background: rgba(99, 102, 241, 0.12);
     }
+    .track-name { font-size: 0.9rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   </style>
 </head>
 <body>
 
 <div class="app-container">
   <header>
-    <h1>🎧 My music </h1>
-    <button class="toggle-video-btn" id="toggleVideoBtn">إظهار الفيديو 🎬</button>
+    <h1>🎧 NAGHAM</h1>
+    <button class="toggle-video-btn" id="toggleVideoBtn">🎬 Toggle Video</button>
   </header>
 
   <div class="media-box" id="mediaBox">
@@ -212,8 +237,8 @@
   </div>
 
   <div class="track-info">
-    <div class="track-title" id="trackTitle">جاري جلب القائمة...</div>
-    <div class="track-status" id="modeLabel">الوضع: تشغيل بالترتيب</div>
+    <div class="track-title" id="trackTitle">✨ Loading playlist...</div>
+    <div class="track-status" id="modeLabel">Mode: Sequential Play</div>
   </div>
 
   <div class="progress-area">
@@ -225,10 +250,10 @@
   </div>
 
   <div class="controls">
-    <button class="btn mode-btn active" id="modeBtn" title="تغيير وضع التكرار">➡️ بالترتيب</button>
-    <button class="btn" id="prevBtn" title="السابق">⏮️</button>
-    <button class="btn play-btn" id="playPauseBtn" title="تشغيل / إيقاف">▶️</button>
-    <button class="btn" id="nextBtn" title="التالي">⏭️</button>
+    <button class="btn mode-btn active" id="modeBtn" title="Change Play Mode">➡️ Sequential</button>
+    <button class="btn" id="prevBtn" title="Previous Track">⏮️</button>
+    <button class="btn play-btn" id="playPauseBtn" title="Play / Pause">▶️</button>
+    <button class="btn" id="nextBtn" title="Next Track">⏭️</button>
   </div>
 
   <div class="playlist" id="playlist"></div>
@@ -255,29 +280,27 @@
   let showVideo = false;
 
   const modes = [
-    { btn: "➡️ بالترتيب", label: "الوضع: تشغيل بالترتيب (يتوقف في النهاية)" },
-    { btn: "🔁 تكرار القائمة", label: "الوضع: تكرار القائمة بالكامل" },
-    { btn: "🔂 تكرار المقطع", label: "الوضع: تكرار الأغنية الحالية" }
+    { btn: "➡️ Sequential", label: "Mode: Sequential Play (Stops at end)" },
+    { btn: "🔁 Loop List", label: "Mode: Repeat Full Playlist" },
+    { btn: "🔂 Repeat Track", label: "Mode: Loop Current Track" }
   ];
 
-  // جلب أسماء الفيديوهات والأغاني مباشرة من الصفحة الرئيسية للمشروع بدون فولدر media
   async function loadTracksFromRoot() {
     try {
-      const host = window.location.hostname; // username.github.io
+      const host = window.location.hostname;
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       
       if (!host.includes('github.io') || pathParts.length === 0) {
-        trackTitle.textContent = "افتح الرابط من GitHub Pages ليتم تشغيل الملفات تلقائياً";
+        trackTitle.textContent = "🚀 Open via GitHub Pages to load tracks automatically";
         return;
       }
 
       const username = host.split('.')[0];
       const repo = pathParts[0];
-      // قراءة محتويات المشروع الرئيسية مباشرة (Root)
       const apiUrl = `https://api.github.com/repos/${username}/${repo}/contents`;
 
       const response = await fetch(apiUrl);
-      if (!response.ok) throw new Error("تعذر الوصول للمشروع، تأكد أنه Public");
+      if (!response.ok) throw new Error("Failed to fetch repository contents");
 
       const files = await response.json();
       const allowedExt = ['.mp4', '.mp3', '.mkv', '.webm', '.m4a', '.wav', '.ogg'];
@@ -293,13 +316,13 @@
         });
 
       if (tracks.length === 0) {
-        trackTitle.textContent = "ارفع فيديوهاتك بجانب index.html وستظهر هنا فوراً";
+        trackTitle.textContent = "📂 Drop media files next to index.html!";
         return;
       }
 
       loadTrack(0, false);
     } catch (err) {
-      trackTitle.textContent = "تأكد أن المشروع عام (Public) وتم رفع الفيديوهات";
+      trackTitle.textContent = "⚠️ Error loading media from repository";
       console.error(err);
     }
   }
@@ -309,7 +332,7 @@
     tracks.forEach((track, index) => {
       const div = document.createElement('div');
       div.className = `track-item ${index === currentIndex ? 'active' : ''}`;
-      div.innerHTML = `<span>${index + 1}. ${track.title}</span><span>${index === currentIndex ? '🔊' : '▶️'}</span>`;
+      div.innerHTML = `<span class="track-name">🎵 ${index + 1}. ${track.title}</span><span>${index === currentIndex ? '🔊' : '▶️'}</span>`;
       div.onclick = () => loadTrack(index, true);
       playlistEl.appendChild(div);
     });
@@ -395,11 +418,11 @@
     if (showVideo) {
       player.classList.add('show');
       visualizer.style.display = 'none';
-      toggleVideoBtn.textContent = 'وضع الصوت فقط 🎧';
+      toggleVideoBtn.textContent = '🎧 Audio Only';
     } else {
       player.classList.remove('show');
       visualizer.style.display = 'flex';
-      toggleVideoBtn.textContent = 'إظهار الفيديو 🎬';
+      toggleVideoBtn.textContent = '🎬 Toggle Video';
     }
   };
 
